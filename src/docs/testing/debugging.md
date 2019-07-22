@@ -46,28 +46,11 @@ void someFunction(double offset) {
 }
 ```
 
-## `print` and `debugPrint` with `flutter logs`
+## `print` 와 `debugPrint` 그리고 `flutter logs`
 
-The Dart `print()` function outputs to the system console, which
-you can view using `flutter logs` (which is basically a wrapper around
-`adb logcat`).
-
-If you output too much at once, then Android sometimes discards some
-log lines. To avoid this, you can use
-[`debugPrint()`]({{site.api}}/flutter/foundation/debugPrint.html),
-from Flutter's `foundation` library. This is a wrapper around `print` which throttles
-the output to a level that avoids being dropped by Android's kernel.
-
-Many classes in the Flutter framework have useful `toString`
-implementations. By convention, these output a single line usually
-including the `runtimeType` of the object, typically in the form
-`ClassName(more information about this instance...)`. Some classes
-that are used in trees also have `toStringDeep`, which returns a
-multiline description of the entire subtree from that point. Some
-classes that have particularly ~~verbose~~ helpful `toString`
-implementations have a corresponding `toStringShort` which returns
-only the type or some other very brief (one or two word) description
-of the object.
+Dart의 `print()` 함수는 (기본적으로 `adb logcat`를 사용하는)`flutter logs` 명령어로 볼 수 있도록, 시스템 콘솔로 출력을 보냅니다.
+출력이 너무 많은 경우, 안드로이드는 임의로 로그 줄 수를 줄입니다. 이를 피하려면, Flutter의 `foundation` 라이브러리의 [`debugPrint()`]({{site.api}}/flutter/foundation/debugPrint.html)를 사용하세요. 이 함수는 안드로이드 커널이 로그를 누락하는 것을 방지하기 위해 `print` 함수를 사용하여 출력 레벨을 조절합니다. 몇 클래스들은 
+Flutter 프레임워크의 많은 클래스들이 `toString`을 구현하고 있습니다. 규칙에 따라, 일반적으로 `ClassName(more information about this instance...)`의 형태로 객체의 `runtimeType`을 포함하는 단일 라인의 정보를 출력합니다. 그 중에서 트리 구조를 가진 클래스들은 출력 시점의 여러줄의 전체 서브트리 정보를 출력하도록 `toStringDeep`을 구현합니다. 어떤 클래스들은 ~~장황한~~유용한 `toString`에 대응하는 객체의 타입 혹은, 한 두 단어로 된 매우 간결한 정보를 돌려주는 `toStringShort`를 구현합니다.
 
 ## Debug mode assertions
 
