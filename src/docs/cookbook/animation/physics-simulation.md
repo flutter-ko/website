@@ -1,5 +1,5 @@
 ---
-title: Animate a widget using a physics simulation
+title: 물리 시뮬레이션 이용하여 위젯에 애니메이션 주기
 prev:
   title: Animate a page route transition
   path: /docs/cookbook/animation/page-route-animation
@@ -8,24 +8,24 @@ next:
   path: /docs/cookbook/animation/animated-container
 ---
 
-Physics simulations can make app interactions feel realistic and interactive.
-For example, you might want to animate a widget to act as if it were attached to
-a spring or falling with gravity.
+물리 시뮬레이션(Physics simulations)으로 앱의 인터렉션을 현실감 있고 인터랙티브하게 만들 수 있습니다.
+예를 들어, 위젯에 스프링에 부착되거나 중력에 의해 떨어지는 것처럼 작동하는 
+애니메이션을 만들 수 있습니다.
 
-This recipe demonstrates how to move a widget from a dragged point back to the
-center using a spring simulation.
+이 예제는 스프링 시뮬레이션을 사용하여 위젯을 
+드래그 된 지점에서 중심으로 다시 이동하는 방법을 보여줍니다.
 
-This recipe uses these steps:
+이 예제는 아래와 같은 단계로 진행됩니다:
 
-1. Set up an animation controller
-2. Move the widget using gestures
-3. Animate the widget
-4. Calculate the velocity to simulate a springing motion
+1. 애니메이션 컨트롤러 설정
+2. 제스처를 사용하여 위젯 이동
+3. 위젯 애니메이션 적용
+4. 스프링 운동을 시뮬레이션하기 위한 속도 계산
 
 
-## Step 1: Set up an animation controller
+## Step 1: 애니메이션 컨트롤러 설정
 
-Start with a stateful widget called `DraggableCard`:
+상태가 있는 위젯(stateful widget)인 `DraggableCard`와 함께 시작하세요:
 
 ```dart
 import 'package:flutter/material.dart';
@@ -78,14 +78,14 @@ class _DraggableCardState extends State<DraggableCard> {
 }
 ```
 
-Make the `_DraggableCardState` class extend from
-[SingleTickerProviderStateMixin][].  Then construct an [AnimationController][] in
-`initState` and set `vsync` to `this`.
+[SingleTickerProviderStateMixin][]에서 `_DraggableCardState` 클래스를 확장하세요.
+그런 다음 `initState`에서 [AnimationController][]를 생성하고
+`this`에 `vsync`를 설정하세요.
 
 {{site.alert.note}}
-  Extending `SingleTickerProviderStateMixin` allows the state object to be a
-  `TickerProvider` for the `AnimationController`. For more information, see the
-  documentation for [TickerProvider][].
+  `SingleTickerProviderStateMixin`을 확장하면 상태 객체가 
+  `AnimationController`의 `TickerProvider`가 될 수 있습니다.
+  더 많은 정보를 원하시면 [TickerProvider][]를 참조하세요.
 {{site.alert.end}}
 
 ```dart
@@ -109,7 +109,7 @@ class _DraggableCardState extends State<DraggableCard>
   //...
 ```
 
-## Step 2: Move the widget using gestures
+## Step 2: 제스처를 사용하여 위젯 이동
 
 Make the widget move when it's dragged, and add an [Alignment][] field to the
 `_DraggableCardState` class:
@@ -148,7 +148,7 @@ Widget build(BuildContext context) {
 }
 ```
 
-## Step 3: Animate the widget
+## Step 3: 위젯 애니메이션 적용
 
 When the widget is released, it should spring back to the center.
 
@@ -219,7 +219,7 @@ onPanEnd: (details) {
 },
 ```
 
-## Step 4: Calculate the velocity to simulate a springing motion
+## Step 4: 스프링 운동을 시뮬레이션하기 위한 속도 계산
 
 The last step is to do a little math, to calculate the velocity of the widget
 after it's finished being dragged. This is so that the widget realistically
