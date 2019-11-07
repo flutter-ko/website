@@ -1,44 +1,35 @@
 ---
-title: Simple app state management
+title: 간단한 앱 상태 관리
 prev:
-  title: Ephemeral versus app state
+  title: 임시 상태 vs 앱 상태
   path: /docs/development/data-and-backend/state-mgmt/ephemeral-vs-app
 next:
-  title: List of approaches
+  title: 접근 방법 목록
   path: /docs/development/data-and-backend/state-mgmt/options
 ---
 
-Now that you know about [declarative UI
-programming](/docs/development/data-and-backend/state-mgmt/declarative)
-and the difference between [ephemeral and app
-state](/docs/development/data-and-backend/state-mgmt/ephemeral-vs-app),
-you are ready to learn about simple app state management.
+이제 [선언적 UI 프로그래밍](/docs/development/data-and-backend/state-mgmt/declarative)
+과 [임시상태와 앱 상태](/docs/development/data-and-backend/state-mgmt/ephemeral-vs-app)의 구분에 대해 배웠으니,
+간단한 앱 상태 관리에 대해 배울 준비가 되었습니다.
 
-On this page, we are going to be using the `provider` package.
-If you are new to Flutter and you don't have a strong reason to choose
-another approach (Redux, Rx, hooks, etc.), this is probably the approach
-you should start with. `provider` is easy to understand and it doesn't
-use much code. It also uses concepts that are applicable in every other
-approach.
+이 페이지에서는, `provider` 패키지를 사용할것입니다. 
+Flutter가 처음이고 Redux, Rx, hooks 등과 같은 다른 접근방법을 사용할 강력한 이유가 없다면, 
+이것이 당신이 시작해야 할 접근 방법일 것입니다. `provider`는 이해하기 쉽고, 코드를 많이 사용하지 않습니다.
+또한 다른 모든 접근 방식에 적용 할 수 있는 개념을 사용합니다.
 
-That said, if you have strong background in state management from other
-reactive frameworks, you will find packages and tutorials listed on the
-[following page](/docs/development/data-and-backend/state-mgmt/options).
+즉, 다른 리액티브 프레임워크에서의 상태 관리에 대하여 강력한 배경지식이 있다면 
+[다음 페이지](/docs/development/data-and-backend/state-mgmt/options)에서 패키지와 튜토리얼을 찾을 수 있습니다.
 
-## Our example {% asset development/data-and-backend/state-mgmt/model-shopper-screencast alt="An animated gif showing a Flutter app in use. It starts with the user on a login screen. They log in and are taken to the catalog screen, with a list of items. The click on several items, and as they do so, the items are marked as "added". The user clicks on a button and gets taken to the cart view. They see the items there. They go back to the catalog, and the items they bought still show "added". End of animation." class='site-image-right' %}
+## 우리의 예제 {% asset development/data-and-backend/state-mgmt/model-shopper-screencast alt="An animated gif showing a Flutter app in use. It starts with the user on a login screen. They log in and are taken to the catalog screen, with a list of items. The click on several items, and as they do so, the items are marked as "added". The user clicks on a button and gets taken to the cart view. They see the items there. They go back to the catalog, and the items they bought still show "added". End of animation." class='site-image-right' %}
 
-For illustration, consider the following simple app.
+설명을 위해 다음과 같은 간단한 앱을 고려해 보십시오.
 
-The app has three separate screens: a login prompt, a catalog,
-and a cart (represented by the `MyLoginScreen`, `MyCatalog`,
-and `MyCart` widgets, respectively). It could be a shopping app,
-but you can imagine the same structure in a simple social networking
-app (replace catalog for "wall" and cart for "favorites").
+앱은 3개의 화면이 있습니다. 로그인, 상품, 장바구니 (각각 `MyLoginScreen`과 `MyCatalog`, `MyCart`로 표시합니다.)
+쇼핑 앱이 될 수도 있지만, 같은 구조로 간단한 소셜 네트워킹 앱을 생각할수도 있습니다. (상품 대신 담벼락, 장바구니 대신 즐겨찾기로 바꿔보세요)
 
-The catalog screen includes a custom app bar (`MyAppBar`)
-and a scrolling view of many list items (`MyListItems`).
+상품 화면은 `MyAppBar`라는 커스텀 AppBar와, 많은 `MyListItems` 항목이 스크롤되는 목록을 포함합니다.
 
-Here's the app visualized as a widget tree.
+여기에 앱의 위젯 트리를 시각화 하였습니다.
 
 {% asset development/data-and-backend/state-mgmt/simple-widget-tree alt="A widget tree with MyApp at the top, and MyLoginScreen, MyCatalog and MyCart below it. MyLoginScreen and MyCart area leaf nodes, but MyCatalog have two children: MyAppBar and a list of MyListItems." %}
 
@@ -46,61 +37,53 @@ Here's the app visualized as a widget tree.
   Source drawing for the png above: https://docs.google.com/drawings/d/1KXxAl_Ctxc-avhR4uE58BXBM6Tyhy0pQMCsSMFHVL_0/edit?zx=y4m1lzbhsrvx
 {% endcomment %}
 
-So we have at least 6 subclasses of `Widget`. Many of them will need
-access to state that "belongs" elsewhere. For example, each
-`MyListItem` will want to be able to add to cart. It might also want
-to see if the item that it's displaying is already in the cart.
+최소 6개의 `Widget`의 서브클래스가 있습니다. 대부분은 다른곳의 상태를 접근해야 할 것입니다.
+예를들어, 각각의 `MyListItem`은 장바구니 추가가 가능해야 할것입니다. 장바구니에 이미 들어있는 상품을 표시하고 있는지도 알고 싶을수도 있습니다.
 
-This takes us to our first question: where should we put the current
-state of the cart? 
+이것은 첫번째 질문을 줍니다. 장바구니의 상태는 어디에 둬야 할까요?
 
 
-## Lifting state up
+## 상태 위로 올리기
 
-In Flutter, it makes sense to keep the state above the widgets that use it.
+Flutter에서는 해당 상태를 사용하는 위젯보다 상위에 상태를 두어야 합니다. 
 
-Why? In declarative frameworks like Flutter, if you want to change the UI,
-you have to rebuild it. There is no easy way to have
-`MyCart.updateWith(somethingNew)`. In other words, it's hard to
-imperatively change a widget from outside, by calling a method on it.
-And even if you could make this work, you would be fighting the
-framework instead of letting it help you.
+왜냐구요? Flutter 와 같은 선언적 프레임워크에서는, UI를 변경하고싶다면, 다시 빌드해야만 합니다.
+`MyCart.updateWith(somethingNew)` 와 같은 손쉬운 방법이 없습니다.
+다른말로는 외부로부터 위젯의 함수를 호출하는 식으로 명령적 변경을 하기가 어렵습니다.
+만약 이걸 되게 한다고 하더라도, 프레임워크가 도와주는 대신 당신이 직접 다투어야 합니다.
 
 <!-- skip -->
 ```dart
-// BAD: DO NOT DO THIS
+// BAD: 이러지 마세요
 void myTapHandler() {
   var cartWidget = somehowGetMyCartWidget();
   cartWidget.updateWith(item);
 }
 ```
 
-Even if you get the above code to work, you will then have to deal
-with the following in the `MyCart` widget:
+만약 위의 코드를 어떻게 동작하게 한다고 하더라도, `MyCart`위젯에서 다음과 같은것을 해결해야 합니다.
 
 <!-- skip -->
 ```dart
-// BAD: DO NOT DO THIS
+// BAD: 이러지 마세요
 Widget build(BuildContext context) {
   return SomeWidget(
-    // The initial state of the cart.
+    // 장바구니의 초기 상태입니다.
   );
 }
 
 void updateWith(Item item) {
-  // Somehow you need to change the UI from here.
+  // 여기서 능력껏 UI를 변경해야 합니다.
 }
 ```
 
-You would need to take into consideration the current state of the UI
-and apply the new data to it. It's hard to avoid bugs this way.
+새로운 데이터를 적용하기 전에 현재의 UI 상태가 어떤지 고려해야 할것입니다. 
+이러한 방법으로는 오류를 피하기 어렵습니다.
 
-In Flutter, you construct a new widget every time its contents change.
-Instead of `MyCart.updateWith(somethingNew)` (a method call)
-you use `MyCart(contents)` (a constructor). Because you can only
-construct new widgets in the build methods of their parents,
-if you want to change `contents`, it needs to live in `MyCart`'s
-parent or above.
+Flutter에서는 위젯의 내용이 바뀔때마다 새로운 위젯을 구성합니다.
+`MyCart.updateWith(somethingNew)` (함수 호출) 대신 `MyCart(contents)` (constructor) 를 사용합니다.
+상위 위젯의 build 메서드를 통해서만 새로운 위젯을 구성할 수 있기 때문에, 
+`contents`를 변경하고 싶다면, `MyCart`의 부모 또는 그보다 상위 위젯에 `contents`가 존재해야 합니다.
 
 <?code-excerpt "state_mgmt/simple/lib/src/provider.dart (myTapHandler)"?>
 ```dart
@@ -111,7 +94,7 @@ void myTapHandler(BuildContext context) {
 }
 ```
 
-Now `MyCart` has only one code path for building any version of the UI.
+이제 `MyCart` 는 어떠한 UI 버전을 빌드하더라도 한개의 코드 경로만 가지게 됩니다.
 
 <?code-excerpt "state_mgmt/simple/lib/src/provider.dart (build)"?>
 ```dart
@@ -444,5 +427,4 @@ dev_dependencies:
   # ...
 ```
 
-Now you can `import 'package:provider/provider.dart';`
-and start building.
+이제 `import 'package:provider/provider.dart';` 를 하고 개발을 시작해보세요.
